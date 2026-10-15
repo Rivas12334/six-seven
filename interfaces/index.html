@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIGLEPRO · Sistema de Gestión de Legajos y Promoción Docente — UNP</title>
+  <meta name="description" content="Sistema digital para gestionar el legajo y la promoción de docentes ordinarios de la Universidad Nacional de Piura." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- Layout Wrapper -->
+  <div class="layout" id="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">
+          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+            <circle cx="19" cy="19" r="19" fill="#C8102E"/>
+            <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="14" font-weight="700" font-family="Inter">UNP</text>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">SIGLEPRO</span>
+          <span class="brand-sub">Legajos y Promoción</span>
+        </div>
+      </div>
+
+      <!-- Role selector -->
+      <div class="role-selector" id="role-selector">
+        <label class="role-label">Vista de rol:</label>
+        <select id="role-select" onchange="changeRole(this.value)">
+          <option value="docente">Docente Ordinario</option>
+          <option value="urh" selected>Personal URH / Legajos</option>
+          <option value="comision">Comisión Evaluadora</option>
+          <option value="decanato">Decanato / Consejo</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <ul>
+          <li class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
+            <span class="nav-icon">⊞</span>
+            <span class="nav-text">Dashboard</span>
+          </li>
+          <li class="nav-item" onclick="navigate('legajo')" id="nav-legajo">
+            <span class="nav-icon">📋</span>
+            <span class="nav-text">Mi Legajo</span>
+            <span class="nav-badge badge-yellow" id="badge-legajo">4</span>
+          </li>
+          <li class="nav-item" onclick="navigate('meritos')" id="nav-meritos">
+            <span class="nav-icon">🏅</span>
+            <span class="nav-text">Verificación Méritos</span>
+            <span class="nav-badge badge-red" id="badge-meritos">87</span>
+          </li>
+          <li class="nav-item" onclick="navigate('convocatorias')" id="nav-convocatorias">
+            <span class="nav-icon">📢</span>
+            <span class="nav-text">Convocatorias</span>
+            <span class="nav-badge badge-blue" id="badge-conv">5</span>
+          </li>
+          <li class="nav-item" onclick="navigate('evaluacion')" id="nav-evaluacion">
+            <span class="nav-icon">📝</span>
+            <span class="nav-text">Evaluación</span>
+          </li>
+          <li class="nav-item" onclick="navigate('orden')" id="nav-orden">
+            <span class="nav-icon">🏆</span>
+            <span class="nav-text">Orden de Mérito</span>
+          </li>
+          <li class="nav-item" onclick="navigate('propuesta')" id="nav-propuesta">
+            <span class="nav-icon">📨</span>
+            <span class="nav-text">Trámite Propuesta</span>
+            <span class="nav-badge badge-green" id="badge-prop">2</span>
+          </li>
+          <li class="nav-item" onclick="navigate('auditoria')" id="nav-auditoria">
+            <span class="nav-icon">🔎</span>
+            <span class="nav-text">Auditoría</span>
+          </li>
+          <li class="nav-item" onclick="navigate('admin')" id="nav-admin">
+            <span class="nav-icon">⚙</span>
+            <span class="nav-text">Administración</span>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar">MG</div>
+          <div class="user-details">
+            <span class="user-name">María García</span>
+            <span class="user-role" id="sidebar-role-label">Personal URH</span>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="showToast('Sesión cerrada correctamente', 'info')">↩</button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-wrapper">
+      <!-- TOP NAV -->
+      <header class="topnav">
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
+        <div class="breadcrumb" id="breadcrumb">
+          <span>Inicio</span>
+          <span class="sep">›</span>
+          <span class="current">Dashboard</span>
+        </div>
+        <div class="topnav-actions">
+          <button class="btn-icon notif-btn" id="notif-btn" onclick="toggleNotifications()" aria-label="Notificaciones">
+            🔔 <span class="notif-count" id="notif-count">3</span>
+          </button>
+          <div class="user-chip" onclick="showToast('Mi perfil (próximamente)', 'info')">
+            <div class="user-avatar-sm">MG</div>
+            <span>María García</span>
+            <span>▾</span>
+          </div>
+        </div>
+
+        <!-- Notification Dropdown -->
+        <div class="notif-dropdown" id="notif-dropdown" style="display:none">
+          <div class="notif-header">
+            <strong>Notificaciones</strong>
+            <button onclick="markAllRead()">Marcar leídas</button>
+          </div>
+          <div class="notif-list">
+            <div class="notif-item unread">
+              <span class="notif-icon" style="background:#FEF3C7">⚠️</span>
+              <div>
+                <p><strong>Mérito observado</strong> — Dr. Rodríguez</p>
+                <small>Hace 10 min</small>
+              </div>
+            </div>
+            <div class="notif-item unread">
+              <span class="notif-icon" style="background:#DCFCE7">✅</span>
+              <div>
+                <p><strong>Solicitud presentada</strong> — Convocatoria 2025-II</p>
+                <small>Hace 2 horas</small>
+              </div>
+            </div>
+            <div class="notif-item unread">
+              <span class="notif-icon" style="background:#DBEAFE">📢</span>
+              <div>
+                <p><strong>Nueva convocatoria abierta</strong> — PROP-2025-II</p>
+                <small>Hace 1 día</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- VIEWS -->
+      <main class="content" id="main-content">
+
+        <!-- ===== DASHBOARD ===== -->
+        <section class="view active" id="view-dashboard">
+          <div class="view-header">
+            <div>
+              <h1>Dashboard</h1>
+              <p class="view-sub">Resumen general del sistema — Convocatoria 2025-II activa</p>
+            </div>
+            <button class="btn-primary" onclick="navigate('convocatorias'); showToast('Redirigiendo a convocatorias...','info')">+ Crear Convocatoria</button>
+          </div>
+
+          <!-- Stat Cards -->
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#EEF2FF; color:#3730A3">👤</div>
+              <div class="stat-info">
+                <span class="stat-label">Total Docentes</span>
+                <span class="stat-value">1,250</span>
+                <span class="stat-change positive">↑ 3.2% este semestre</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#FEF3C7; color:#92400E">⏳</div>
+              <div class="stat-info">
+                <span class="stat-label">Méritos Pendientes</span>
+                <span class="stat-value">87</span>
+                <span class="stat-change negative">↓ Requieren verificación</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#FEE2E2; color:#991B1B">📢</div>
+              <div class="stat-info">
+                <span class="stat-label">Convocatorias Activas</span>
+                <span class="stat-value">5</span>
+                <span class="stat-change neutral">En evaluación o abiertas</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#DCFCE7; color:#166534">✅</div>
+              <div class="stat-info">
+                <span class="stat-label">Solicitudes Evaluadas</span>
+                <span class="stat-value">342</span>
+                <span class="stat-change positive">↑ 32% vs. 2024-II</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="charts-row">
+            <div class="card chart-card">
+              <div class="card-header">
+                <h3>Distribución de Estados de Mérito</h3>
+              </div>
+              <div class="donut-wrap">
+                <div class="donut-chart" id="donut-chart">
+                  <svg viewBox="0 0 120 120" width="160" height="160">
+                    <!-- Verificado 58% -->
+                    <circle cx="60" cy="60" r="45" fill="none" stroke="#22C55E" stroke-width="18"
+                      stroke-dasharray="163.4 119.5" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+                    <!-- Pendiente 27% -->
+                    <circle cx="60" cy="60" r="45" fill="none" stroke="#F59E0B" stroke-width="18"
+                      stroke-dasharray="76.1 206.8" stroke-dashoffset="-163.4" transform="rotate(-90 60 60)"/>
+                    <!-- Observado 15% -->
+                    <circle cx="60" cy="60" r="45" fill="none" stroke="#EF4444" stroke-width="18"
+                      stroke-dasharray="42.4 240.5" stroke-dashoffset="-239.5" transform="rotate(-90 60 60)"/>
+                    <text x="60" y="56" text-anchor="middle" font-size="13" font-weight="700" fill="#1E293B">1,842</text>
+                    <text x="60" y="70" text-anchor="middle" font-size="8" fill="#64748B">méritos</text>
+                  </svg>
+                </div>
+                <div class="donut-legend">
+                  <div class="legend-item"><span class="dot" style="background:#22C55E"></span>Verificado<strong>58%</strong></div>
+                  <div class="legend-item"><span class="dot" style="background:#F59E0B"></span>Pendiente<strong>27%</strong></div>
+                  <div class="legend-item"><span class="dot" style="background:#EF4444"></span>Observado<strong>15%</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card chart-card flex-2">
+              <div class="card-header">
+                <h3>Puntaje Promedio por Facultad</h3>
+                <span class="badge badge-blue">2025-II</span>
+              </div>
+              <div class="bar-chart" id="bar-chart">
+                <div class="bar-group">
+                  <div class="bar-wrap"><div class="bar-fill" style="height:74%; background:#003082"></div></div>
+                  <span class="bar-value">61.4</span>
+                  <span class="bar-label">Ingeniería</span>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-wrap"><div class="bar-fill" style="height:64%; background:#003082"></div></div>
+                  <span class="bar-value">53.1</span>
+                  <span class="bar-label">Medicina</span>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-wrap"><div class="bar-fill" style="height:59%; background:#003082"></div></div>
+                  <span class="bar-value">48.9</span>
+                  <span class="bar-label">Derecho</span>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-wrap"><div class="bar-fill" style="height:55%; background:#003082"></div></div>
+                  <span class="bar-value">45.6</span>
+                  <span class="bar-label">Educación</span>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-wrap"><div class="bar-fill" style="height:48%; background:#C8102E"></div></div>
+                  <span class="bar-value">39.8</span>
+                  <span class="bar-label">Economía</span>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-wrap"><div class="bar-fill" style="height:43%; background:#003082"></div></div>
+                  <span class="bar-value">35.5</span>
+                  <span class="bar-label">Arquitectura</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card activity-card">
+              <div class="card-header">
+                <h3>Actividad Reciente</h3>
+                <button class="btn-link" onclick="navigate('auditoria')">Ver todo →</button>
+              </div>
+              <ul class="activity-list">
+                <li class="activity-item">
+                  <span class="activity-dot verified"></span>
+                  <div class="activity-body">
+                    <p>Mérito verificado — <strong>Dr. Carlos Rodríguez</strong></p>
+                    <small>Grado de Doctor en Ciencias, PUCP · Hace 15 min</small>
+                  </div>
+                  <span class="badge badge-green">Verificado</span>
+                </li>
+                <li class="activity-item">
+                  <span class="activity-dot pending"></span>
+                  <div class="activity-body">
+                    <p>Nueva solicitud presentada — <strong>Mg. Laura Torres</strong></p>
+                    <small>Convocatoria PROP-2025-II · Hace 1 hora</small>
+                  </div>
+                  <span class="badge badge-blue">Presentada</span>
+                </li>
+                <li class="activity-item">
+                  <span class="activity-dot observed"></span>
+                  <div class="activity-body">
+                    <p>Mérito observado — <strong>Dr. José Quispe</strong></p>
+                    <small>Ponencia sin constancia · Hace 2 horas</small>
+                  </div>
+                  <span class="badge badge-red">Observado</span>
+                </li>
+                <li class="activity-item">
+                  <span class="activity-dot verified"></span>
+                  <div class="activity-body">
+                    <p>Evaluación cerrada — <strong>Mg. Ana Flores</strong></p>
+                    <small>Resultado: Apto · 62.5 pts · Hace 3 horas</small>
+                  </div>
+                  <span class="badge badge-green">Apto</span>
+                </li>
+                <li class="activity-item">
+                  <span class="activity-dot info"></span>
+                  <div class="activity-body">
+                    <p>Propuesta elevada a Facultad — <strong>Decanato Ingeniería</strong></p>
+                    <small>Plaza Asociado TC · Hace 5 horas</small>
+                  </div>
+                  <span class="badge badge-purple">En Facultad</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Progress Overview -->
+          <div class="card" style="margin-top:1.5rem">
+            <div class="card-header">
+              <h3>Progreso Convocatoria PROP-2025-II · Por Facultad</h3>
+              <span class="badge badge-yellow">En Evaluación</span>
+            </div>
+            <div class="progress-table">
+              <table>
+                <thead>
+                  <tr><th>Facultad</th><th>Plazas</th><th>Solicitudes</th><th>Evaluadas</th><th>Progreso</th><th>Estado</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Ingeniería</strong></td><td>3</td><td>12</td><td>10</td>
+                    <td><div class="prog-bar"><div class="prog-fill" style="width:83%; background:#22C55E"></div></div><small>83%</small></td>
+                    <td><span class="badge badge-yellow">En proceso</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Medicina</strong></td><td>2</td><td>8</td><td>8</td>
+                    <td><div class="prog-bar"><div class="prog-fill" style="width:100%; background:#22C55E"></div></div><small>100%</small></td>
+                    <td><span class="badge badge-green">Completa</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Derecho</strong></td><td>1</td><td>5</td><td>2</td>
+                    <td><div class="prog-bar"><div class="prog-fill" style="width:40%; background:#F59E0B"></div></div><small>40%</small></td>
+                    <td><span class="badge badge-red">Pendiente</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Educación</strong></td><td>2</td><td>7</td><td>7</td>
+                    <td><div class="prog-bar"><div class="prog-fill" style="width:100%; background:#22C55E"></div></div><small>100%</small></td>
+                    <td><span class="badge badge-green">Completa</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== MI LEGAJO ===== -->
+        <section class="view" id="view-legajo">
+          <div class="view-header">
+            <div>
+              <h1>Mi Legajo</h1>
+              <p class="view-sub">Dr. Carlos Enrique Rodríguez Valdivia · Docente Asociado TC · Ingeniería Civil</p>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-nuevo-merito')">+ Agregar Mérito</button>
+          </div>
+
+          <!-- Legajo summary strip -->
+          <div class="legajo-strip">
+            <div class="legajo-info-item">
+              <span class="li-label">Categoría actual</span>
+              <span class="li-value">Asociado Tiempo Completo</span>
+            </div>
+            <div class="legajo-info-item">
+              <span class="li-label">Facultad / Depto.</span>
+              <span class="li-value">Ing. Civil / Estructuras</span>
+            </div>
+            <div class="legajo-info-item">
+              <span class="li-label">Años en categoría</span>
+              <span class="li-value">7 años (desde 2019)</span>
+            </div>
+            <div class="legajo-info-item">
+              <span class="li-label">Puntaje actual</span>
+              <span class="li-value puntaje">62.5 / 100 pts</span>
+            </div>
+            <div class="legajo-info-item">
+              <span class="li-label">Ratificación</span>
+              <span class="badge badge-green">Vigente 2025</span>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="tab-bar">
+            <button class="tab active" onclick="switchTab('tab-meritos-list', this)">Méritos y Evidencias</button>
+            <button class="tab" onclick="switchTab('tab-trayectoria', this)">Trayectoria Laboral</button>
+            <button class="tab" onclick="switchTab('tab-solicitudes', this)">Mis Solicitudes</button>
+          </div>
+
+          <div class="tab-content" id="tab-meritos-list">
+            <div class="filter-row">
+              <input type="text" class="input-search" placeholder="🔍 Buscar mérito..." />
+              <select class="select-filter">
+                <option>Todos los estados</option>
+                <option>Verificado</option>
+                <option>Pendiente</option>
+                <option>Observado</option>
+              </select>
+              <select class="select-filter">
+                <option>Todos los tipos</option>
+                <option>Grado académico</option>
+                <option>Investigación</option>
+                <option>Ponencia</option>
+                <option>Docencia</option>
+              </select>
+            </div>
+
+            <div class="merit-cards">
+              <div class="merit-card verified">
+                <div class="merit-card-top">
+                  <div class="merit-type-icon">🎓</div>
+                  <div class="merit-info">
+                    <strong>Doctor en Ciencias de la Ingeniería</strong>
+                    <span>Pontificia Universidad Católica del Perú · 2018</span>
+                  </div>
+                  <span class="badge badge-green">Verificado</span>
+                </div>
+                <div class="merit-card-bottom">
+                  <span class="merit-pts">Requisito habilitante</span>
+                  <div class="merit-actions">
+                    <button class="btn-sm btn-outline" onclick="showToast('Documento descargado correctamente','success')">📄 Ver PDF</button>
+                    <button class="btn-sm btn-outline" onclick="showToast('Historial de revisión','info')">🕐 Historial</button>
+                  </div>
+                </div>
+                <div class="verified-by">✓ Verificado por Lic. Ramírez — 14/03/2025</div>
+              </div>
+
+              <div class="merit-card pending">
+                <div class="merit-card-top">
+                  <div class="merit-type-icon">📰</div>
+                  <div class="merit-info">
+                    <strong>Artículo en revista Scopus Q2 — Análisis sísmico</strong>
+                    <span>Journal of Structural Engineering · 2024</span>
+                  </div>
+                  <span class="badge badge-yellow">Pendiente</span>
+                </div>
+                <div class="merit-card-bottom">
+                  <span class="merit-pts">Valor: 15 pts (máx. 20)</span>
+                  <div class="merit-actions">
+                    <button class="btn-sm btn-outline">📄 Ver PDF</button>
+                    <button class="btn-sm btn-outline">🕐 Historial</button>
+                  </div>
+                </div>
+                <div class="pending-note">⏳ Pendiente de verificación por personal de legajos</div>
+              </div>
+
+              <div class="merit-card observed">
+                <div class="merit-card-top">
+                  <div class="merit-type-icon">🎤</div>
+                  <div class="merit-info">
+                    <strong>Ponencia en Congreso Internacional de Ingeniería Civil — Lima</strong>
+                    <span>CONIC 2023 · 15–17 nov 2023</span>
+                  </div>
+                  <span class="badge badge-red">Observado</span>
+                </div>
+                <div class="merit-card-bottom">
+                  <span class="merit-pts">Valor: 5 pts (máx. 10)</span>
+                  <div class="merit-actions">
+                    <button class="btn-sm btn-primary" onclick="openModal('modal-corregir')">✏ Corregir</button>
+                    <button class="btn-sm btn-outline">📄 Ver PDF</button>
+                  </div>
+                </div>
+                <div class="observed-note">⚠ Observación: La constancia no indica "ponente" — ingrese certificado de participación como ponente</div>
+              </div>
+
+              <div class="merit-card verified">
+                <div class="merit-card-top">
+                  <div class="merit-type-icon">🏫</div>
+                  <div class="merit-info">
+                    <strong>Docencia universitaria — Resistencia de Materiales</strong>
+                    <span>UNP — Semestres 2020-I al 2025-I (10 semestres)</span>
+                  </div>
+                  <span class="badge badge-green">Verificado</span>
+                </div>
+                <div class="merit-card-bottom">
+                  <span class="merit-pts">Valor: 10 pts (máx. 20)</span>
+                  <div class="merit-actions">
+                    <button class="btn-sm btn-outline">📄 Ver PDF</button>
+                    <button class="btn-sm btn-outline">🕐 Historial</button>
+                  </div>
+                </div>
+                <div class="verified-by">✓ Verificado por Lic. Castro — 20/08/2025</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content hidden" id="tab-trayectoria">
+            <div class="timeline-list">
+              <div class="timeline-item">
+                <div class="tl-dot active"></div>
+                <div class="tl-body">
+                  <strong>Docente Asociado TC — UNP, Depto. Estructuras</strong>
+                  <span class="tl-date">2019 — presente</span>
+                  <p>Contrato vigente. Constancia emitida por URH el 10/01/2025.</p>
+                  <span class="badge badge-green">Activo</span>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="tl-dot"></div>
+                <div class="tl-body">
+                  <strong>Docente Auxiliar TC — UNP, Depto. Estructuras</strong>
+                  <span class="tl-date">2015 — 2019</span>
+                  <p>4 años como Auxiliar. Resolución de nombramiento N.º 432-2015.</p>
+                  <span class="badge badge-green">Verificado</span>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="tl-dot"></div>
+                <div class="tl-body">
+                  <strong>Docente contratado — UDEP, Depto. Ingeniería</strong>
+                  <span class="tl-date">2013 — 2015</span>
+                  <p>Cargo simultáneo permitido. Constancia laboral adjunta.</p>
+                  <span class="badge badge-green">Verificado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content hidden" id="tab-solicitudes">
+            <div class="solicitudes-list">
+              <div class="solicitud-card active-sol">
+                <div class="sol-header">
+                  <div>
+                    <strong>Solicitud PROP-2025-II-042</strong>
+                    <span class="badge badge-blue" style="margin-left:.5rem">Presentada</span>
+                  </div>
+                  <small>Presentada el 12/09/2025</small>
+                </div>
+                <div class="sol-body">
+                  <div class="sol-info-row">
+                    <span><b>Convocatoria:</b> PROP-2025-II</span>
+                    <span><b>Plaza:</b> Principal TC — Depto. Estructuras</span>
+                    <span><b>Categoría destino:</b> Principal Tiempo Completo</span>
+                  </div>
+                  <div class="sol-info-row">
+                    <span><b>Puntaje calculado:</b> 62.5 / 100</span>
+                    <span><b>Requisitos:</b> <span class="badge badge-green">Cumplidos</span></span>
+                  </div>
+                </div>
+                <div class="sol-footer">
+                  <button class="btn-sm btn-outline" onclick="navigate('evaluacion')">Ver evaluación →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== VERIFICACIÓN MÉRITOS ===== -->
+        <section class="view" id="view-meritos">
+          <div class="view-header">
+            <div>
+              <h1>Verificación de Méritos</h1>
+              <p class="view-sub">Cola de méritos pendientes de revisión — Personal URH/Legajos</p>
+            </div>
+            <div class="header-actions">
+              <span class="badge badge-red" style="font-size:.95rem; padding:.4rem .8rem">87 pendientes</span>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <input type="text" class="input-search" placeholder="🔍 Buscar docente o mérito..." />
+            <select class="select-filter">
+              <option>Todas las facultades</option>
+              <option>Ingeniería</option>
+              <option>Medicina</option>
+              <option>Derecho</option>
+              <option>Educación</option>
+            </select>
+            <select class="select-filter">
+              <option>Todos los tipos</option>
+              <option>Grado académico</option>
+              <option>Investigación</option>
+              <option>Ponencia</option>
+            </select>
+            <button class="btn-primary" style="margin-left:auto">Exportar lista</button>
+          </div>
+
+          <div class="card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Docente</th>
+                  <th>Facultad</th>
+                  <th>Tipo de Mérito</th>
+                  <th>Descripción</th>
+                  <th>Fecha subida</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="docente-cell"><div class="avatar-sm">JQ</div><div><strong>Dr. José Quispe</strong><br><small>Asociado TC</small></div></div></td>
+                  <td>Derecho</td>
+                  <td>Ponencia</td>
+                  <td>Ponencia en Congreso Nacional — Lima 2024</td>
+                  <td>10/10/2026</td>
+                  <td><span class="badge badge-yellow">Pendiente</span></td>
+                  <td>
+                    <button class="btn-sm btn-primary" onclick="openVerifModal()">Revisar</button>
+                    <button class="btn-sm btn-outline" onclick="showToast('PDF abierto','info')">📄</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="docente-cell"><div class="avatar-sm">LT</div><div><strong>Mg. Laura Torres</strong><br><small>Auxiliar TC</small></div></div></td>
+                  <td>Medicina</td>
+                  <td>Investigación</td>
+                  <td>Artículo Q1 — Salud pública, vacunación 2023</td>
+                  <td>09/10/2026</td>
+                  <td><span class="badge badge-yellow">Pendiente</span></td>
+                  <td>
+                    <button class="btn-sm btn-primary" onclick="openVerifModal()">Revisar</button>
+                    <button class="btn-sm btn-outline">📄</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="docente-cell"><div class="avatar-sm">MR</div><div><strong>Dr. Marco Reyes</strong><br><small>Asociado TP</small></div></div></td>
+                  <td>Educación</td>
+                  <td>Grado académico</td>
+                  <td>Doctor en Educación — UNMSM 2022</td>
+                  <td>08/10/2026</td>
+                  <td><span class="badge badge-red">Observado</span></td>
+                  <td>
+                    <button class="btn-sm btn-outline" onclick="showToast('Observación registrada: el grado debe estar legalizado','warning')">Ver obs.</button>
+                    <button class="btn-sm btn-outline">📄</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="docente-cell"><div class="avatar-sm">AF</div><div><strong>Mg. Ana Flores</strong><br><small>Auxiliar TC</small></div></div></td>
+                  <td>Ingeniería</td>
+                  <td>Investigación</td>
+                  <td>Libro publicado — Métodos numéricos aplicados</td>
+                  <td>07/10/2026</td>
+                  <td><span class="badge badge-yellow">Pendiente</span></td>
+                  <td>
+                    <button class="btn-sm btn-primary" onclick="openVerifModal()">Revisar</button>
+                    <button class="btn-sm btn-outline">📄</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ===== CONVOCATORIAS ===== -->
+        <section class="view" id="view-convocatorias">
+          <div class="view-header">
+            <div>
+              <h1>Convocatorias de Promoción</h1>
+              <p class="view-sub">Gestión de convocatorias, rúbricas y plazas</p>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-nueva-conv')">+ Nueva Convocatoria</button>
+          </div>
+
+          <div class="conv-grid">
+            <div class="conv-card conv-active">
+              <div class="conv-card-header">
+                <div>
+                  <strong class="conv-code">PROP-2025-II</strong>
+                  <span class="badge badge-yellow" style="margin-left:.5rem">En Evaluación</span>
+                </div>
+                <div class="conv-dots">⋮</div>
+              </div>
+              <h4>Promoción Docente 2025 — Semestre II</h4>
+              <div class="conv-meta">
+                <span>📅 Recepción: 01/08/2025 — 15/09/2025</span>
+                <span>🏅 Rúbrica: RUBR-2025-V2 <em>(aprobada)</em></span>
+                <span>📍 Plazas: 8 | Solicitudes: 32</span>
+              </div>
+              <div class="conv-progress">
+                <div class="prog-bar large"><div class="prog-fill" style="width:72%; background:#003082"></div></div>
+                <small>23/32 solicitudes evaluadas (72%)</small>
+              </div>
+              <div class="conv-actions">
+                <button class="btn-sm btn-outline" onclick="navigate('evaluacion'); showToast('Cargando evaluaciones...','info')">Ver expedientes</button>
+                <button class="btn-sm btn-outline" onclick="navigate('orden')">Orden de mérito</button>
+                <button class="btn-sm btn-danger" onclick="showToast('⚠ No se puede cerrar: existen 2 solicitudes observadas','warning')">Cerrar recepción</button>
+              </div>
+            </div>
+
+            <div class="conv-card">
+              <div class="conv-card-header">
+                <div>
+                  <strong class="conv-code">PROP-2025-I</strong>
+                  <span class="badge badge-green" style="margin-left:.5rem">Cerrada</span>
+                </div>
+              </div>
+              <h4>Promoción Docente 2025 — Semestre I</h4>
+              <div class="conv-meta">
+                <span>📅 Recepción: 01/02/2025 — 15/03/2025</span>
+                <span>🏅 Rúbrica: RUBR-2025-V1</span>
+                <span>📍 Plazas: 5 | Solicitudes: 18</span>
+              </div>
+              <div class="conv-actions">
+                <button class="btn-sm btn-outline" onclick="showToast('Abriendo informe final...','info')">Ver informe final</button>
+                <button class="btn-sm btn-outline">Descargar actas</button>
+              </div>
+            </div>
+
+            <div class="conv-card conv-open">
+              <div class="conv-card-header">
+                <div>
+                  <strong class="conv-code">PROP-2026-I</strong>
+                  <span class="badge badge-blue" style="margin-left:.5rem">Abierta</span>
+                </div>
+              </div>
+              <h4>Promoción Docente 2026 — Semestre I</h4>
+              <div class="conv-meta">
+                <span>📅 Recepción: 01/02/2026 — 15/03/2026</span>
+                <span>🏅 Rúbrica: RUBR-2026-V1 <em>(borrador)</em></span>
+                <span>📍 Plazas: 6 definidas</span>
+              </div>
+              <div class="conv-actions">
+                <button class="btn-sm btn-primary">Editar convocatoria</button>
+                <button class="btn-sm btn-outline">Gestionar plazas</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== EVALUACIÓN ===== -->
+        <section class="view" id="view-evaluacion">
+          <div class="view-header">
+            <div>
+              <h1>Evaluación de Expediente</h1>
+              <p class="view-sub">Mg. Ana Flores Mendoza · PROP-2025-II · Plaza: Asociado TC — Depto. Estructuras</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn-outline" onclick="navigate('orden')">← Volver a lista</button>
+              <button class="btn-primary" onclick="cerrarEvaluacion()">✓ Cerrar Evaluación</button>
+            </div>
+          </div>
+
+          <!-- Split screen -->
+          <div class="eval-split">
+            <!-- Left: Document viewer -->
+            <div class="eval-doc-panel">
+              <div class="eval-doc-header">
+                <strong>Expediente — Documentos</strong>
+                <div class="doc-tabs">
+                  <button class="doc-tab active" onclick="switchDocTab(this, 'Ficha del docente')">Ficha</button>
+                  <button class="doc-tab" onclick="switchDocTab(this, 'Doctor PUCP 2018')">Grado</button>
+                  <button class="doc-tab" onclick="switchDocTab(this, 'Art. Scopus 2024')">Inv.</button>
+                  <button class="doc-tab" onclick="switchDocTab(this, 'Constancia laboral')">Laboral</button>
+                </div>
+              </div>
+              <div class="pdf-viewer">
+                <div class="pdf-placeholder">
+                  <span class="pdf-icon">📄</span>
+                  <h4 id="pdf-title">Ficha del docente</h4>
+                  <div class="pdf-content-sim">
+                    <div class="pdf-field"><span>Nombre completo:</span><strong>Ana María Flores Mendoza</strong></div>
+                    <div class="pdf-field"><span>DNI:</span><strong>45678901</strong></div>
+                    <div class="pdf-field"><span>Categoría:</span><strong>Auxiliar TC</strong></div>
+                    <div class="pdf-field"><span>Facultad:</span><strong>Ingeniería Civil</strong></div>
+                    <div class="pdf-field"><span>Depto.:</span><strong>Estructuras</strong></div>
+                    <div class="pdf-field"><span>Desde (categoría):</span><strong>2019-03-15</strong></div>
+                    <div class="pdf-field"><span>Ratificación vigente:</span><strong>Sí — 2025</strong></div>
+                    <div class="pdf-field"><span>SHA-256 doc:</span><small style="word-break:break-all">a3f8c1e9b2d7f4a0c5e8b1d6f9a2c4e7b0d3f6a9c1e4b7d0f3a6c9e2b5d8f1</small></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Evaluation rubric -->
+            <div class="eval-rubric-panel">
+              <div class="rubric-header">
+                <strong>Rúbrica RUBR-2025-V2 — Evaluación en curso</strong>
+                <span class="badge badge-blue">Borrador (no guardado)</span>
+              </div>
+
+              <!-- Requirements check -->
+              <div class="req-section">
+                <h4>Requisitos (Art. 19 Reglamento UNP 2016)</h4>
+                <div class="req-list">
+                  <div class="req-item ok">
+                    <span class="req-check">✓</span>
+                    <span>Categoría inmediata superior (Asociado TC)</span>
+                  </div>
+                  <div class="req-item ok">
+                    <span class="req-check">✓</span>
+                    <span>Grado de Doctor <em>(Doctor en Ing. Civil — PUCP)</em></span>
+                  </div>
+                  <div class="req-item ok">
+                    <span class="req-check">✓</span>
+                    <span>Mínimo 7 años en categoría actual <em>(7 años, desde 2019)</em></span>
+                  </div>
+                  <div class="req-item ok">
+                    <span class="req-check">✓</span>
+                    <span>Investigación acreditada <em>(2 artículos verificados)</em></span>
+                  </div>
+                  <div class="req-item ok">
+                    <span class="req-check">✓</span>
+                    <span>Ratificación previa vigente <em>(2025)</em></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Score breakdown -->
+              <div class="score-section">
+                <h4>Desglose de Puntaje</h4>
+                <table class="rubric-table">
+                  <thead>
+                    <tr><th>Criterio</th><th>Pts.</th><th>Tope</th><th>Fuente</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Grado de Doctor</td>
+                      <td class="pts-input"><input type="number" value="15" min="0" max="15" id="pts-grado" oninput="recalcPuntaje()" /></td>
+                      <td>15</td>
+                      <td>Art. 20.a</td>
+                    </tr>
+                    <tr>
+                      <td>Investigación (artículos)</td>
+                      <td class="pts-input"><input type="number" value="20" min="0" max="20" id="pts-inv" oninput="recalcPuntaje()" /></td>
+                      <td>20</td>
+                      <td>Art. 20.b</td>
+                    </tr>
+                    <tr>
+                      <td>Docencia universitaria</td>
+                      <td class="pts-input"><input type="number" value="10" min="0" max="20" id="pts-doc" oninput="recalcPuntaje()" /></td>
+                      <td>20</td>
+                      <td>Art. 20.c</td>
+                    </tr>
+                    <tr>
+                      <td>Ponencias acreditadas</td>
+                      <td class="pts-input"><input type="number" value="7" min="0" max="10" id="pts-pon" oninput="recalcPuntaje()" /></td>
+                      <td>10</td>
+                      <td>Art. 20.d</td>
+                    </tr>
+                    <tr>
+                      <td>Gestión y extensión</td>
+                      <td class="pts-input"><input type="number" value="5" min="0" max="10" id="pts-ext" oninput="recalcPuntaje()" /></td>
+                      <td>10</td>
+                      <td>Art. 20.e</td>
+                    </tr>
+                    <tr>
+                      <td>Capacitación docente</td>
+                      <td class="pts-input"><input type="number" value="5.5" min="0" max="15" id="pts-cap" step="0.5" oninput="recalcPuntaje()" /></td>
+                      <td>15</td>
+                      <td>Art. 20.f</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="score-total" id="score-total">
+                  <span>Total calculado:</span>
+                  <strong id="score-value">62.5</strong>
+                  <span>/ 100 pts</span>
+                  <span class="badge badge-green" id="score-badge">≥ 55 — APTO</span>
+                </div>
+
+                <!-- Plaza -->
+                <div class="plaza-check">
+                  <h4>Plaza vacante</h4>
+                  <div class="req-item ok">
+                    <span class="req-check">✓</span>
+                    <span>Asociado TC — Depto. Estructuras — <strong>Disponible</strong> (1/1 libre)</span>
+                  </div>
+                </div>
+
+                <!-- Resultado preview -->
+                <div class="resultado-preview apto">
+                  <span class="res-label">Resultado del sistema:</span>
+                  <span class="res-value">APTO PARA PROPUESTA</span>
+                  <small>Todos los requisitos cumplidos · Puntaje ≥ 55 · Plaza disponible</small>
+                </div>
+
+                <!-- Fundamento -->
+                <div class="fundamento-section">
+                  <label><strong>Fundamento de la comisión (obligatorio al cerrar):</strong></label>
+                  <textarea id="fundamento" rows="4" placeholder="Indique el razonamiento de la comisión evaluadora para este resultado..."></textarea>
+                </div>
+
+                <div class="eval-footer-actions">
+                  <button class="btn-outline" onclick="showToast('Vista previa guardada como borrador','info')">Guardar borrador</button>
+                  <button class="btn-primary" onclick="cerrarEvaluacion()">🔒 Cerrar evaluación</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== ORDEN DE MÉRITO ===== -->
+        <section class="view" id="view-orden">
+          <div class="view-header">
+            <div>
+              <h1>Orden de Mérito</h1>
+              <p class="view-sub">Convocatoria PROP-2025-II — Por plaza y facultad</p>
+            </div>
+            <div class="header-actions">
+              <select class="select-filter">
+                <option>PROP-2025-II</option>
+                <option>PROP-2025-I</option>
+              </select>
+              <select class="select-filter">
+                <option>Todas las plazas</option>
+                <option>Asociado TC — Estructuras</option>
+                <option>Principal TC — Medicina</option>
+              </select>
+              <button class="btn-outline" onclick="showToast('Exportando orden de mérito...','success')">📥 Exportar</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="orden-header">
+              <h3>Plaza: Asociado TC — Depto. Estructuras · Ingeniería Civil</h3>
+              <span class="badge badge-yellow">⚠ Preliminar — recepción no cerrada aún</span>
+            </div>
+            <table class="data-table ranking-table">
+              <thead>
+                <tr>
+                  <th>Puesto</th>
+                  <th>Docente</th>
+                  <th>Categoría actual</th>
+                  <th>Puntaje</th>
+                  <th>Requisitos</th>
+                  <th>Plaza</th>
+                  <th>Resultado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="rank-1">
+                  <td><div class="rank-badge rank-gold">🥇 1</div></td>
+                  <td><div class="docente-cell"><div class="avatar-sm">AF</div><div><strong>Mg. Ana Flores Mendoza</strong><br><small>Auxiliar TC</small></div></div></td>
+                  <td>Auxiliar TC</td>
+                  <td><strong class="pts-display">62.5</strong></td>
+                  <td><span class="badge badge-green">Cumplidos</span></td>
+                  <td><span class="badge badge-green">Disponible</span></td>
+                  <td><span class="badge badge-green">APTO</span></td>
+                  <td><button class="btn-sm btn-primary" onclick="navigate('propuesta'); showToast('Preparando propuesta...','info')">Proponer</button></td>
+                </tr>
+                <tr>
+                  <td><div class="rank-badge rank-silver">🥈 2</div></td>
+                  <td><div class="docente-cell"><div class="avatar-sm">CR</div><div><strong>Dr. Carlos Rodríguez</strong><br><small>Auxiliar TC</small></div></div></td>
+                  <td>Auxiliar TC</td>
+                  <td><strong class="pts-display">58.0</strong></td>
+                  <td><span class="badge badge-green">Cumplidos</span></td>
+                  <td><span class="badge badge-red">Sin vacante</span></td>
+                  <td><span class="badge badge-yellow">SIN VACANTE</span></td>
+                  <td><button class="btn-sm btn-outline" onclick="navigate('evaluacion')">Ver eval.</button></td>
+                </tr>
+                <tr>
+                  <td><div class="rank-badge rank-bronze">🥉 3</div></td>
+                  <td><div class="docente-cell"><div class="avatar-sm">MT</div><div><strong>Mg. Mario Tello</strong><br><small>Auxiliar TP</small></div></div></td>
+                  <td>Auxiliar TP</td>
+                  <td><strong class="pts-display">51.3</strong></td>
+                  <td><span class="badge badge-red">No cumple</span></td>
+                  <td>—</td>
+                  <td><span class="badge badge-red">NO APTO</span></td>
+                  <td><button class="btn-sm btn-outline" onclick="navigate('evaluacion')">Ver eval.</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card" style="margin-top:1.5rem">
+            <div class="orden-header">
+              <h3>Plaza: Principal TC — Depto. Medicina Interna</h3>
+              <span class="badge badge-green">Completa — lista para propuesta</span>
+            </div>
+            <table class="data-table ranking-table">
+              <thead>
+                <tr><th>Puesto</th><th>Docente</th><th>Puntaje</th><th>Resultado</th><th>Acciones</th></tr>
+              </thead>
+              <tbody>
+                <tr class="rank-1">
+                  <td><div class="rank-badge rank-gold">🥇 1</div></td>
+                  <td><div class="docente-cell"><div class="avatar-sm">LT</div><div><strong>Dr. Luis Torres Peralta</strong><br><small>Asociado TC</small></div></div></td>
+                  <td><strong class="pts-display">78.5</strong></td>
+                  <td><span class="badge badge-green">APTO</span></td>
+                  <td><span class="badge badge-blue">Propuesta preparada</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ===== TRÁMITE PROPUESTA ===== -->
+        <section class="view" id="view-propuesta">
+          <div class="view-header">
+            <div>
+              <h1>Trámite de Propuesta</h1>
+              <p class="view-sub">Seguimiento del proceso por instancias universitarias</p>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-preparar-prop')">+ Preparar propuesta</button>
+          </div>
+
+          <!-- Propuesta card -->
+          <div class="card propuesta-card">
+            <div class="prop-top">
+              <div>
+                <h3>Propuesta PROP-2025-II-001</h3>
+                <p>Mg. Ana Flores Mendoza → Plaza: Asociado TC, Depto. Estructuras</p>
+                <p><small>Convocatoria PROP-2025-II · Puntaje: 62.5 pts · Puesto 1</small></p>
+              </div>
+              <span class="badge badge-purple" style="font-size:.95rem; padding:.4rem .9rem">En Facultad</span>
+            </div>
+
+            <!-- Progress timeline -->
+            <div class="prop-timeline">
+              <div class="prop-step done">
+                <div class="prop-step-icon">✓</div>
+                <div class="prop-step-body">
+                  <strong>1. Decanato</strong>
+                  <p>Propuesta preparada · Informe N.º 042-2025-DECANI</p>
+                  <small>📅 12/10/2025 · Decano: Dr. Pedro Alva</small>
+                </div>
+              </div>
+              <div class="prop-connector done-line"></div>
+              <div class="prop-step active">
+                <div class="prop-step-icon">→</div>
+                <div class="prop-step-body">
+                  <strong>2. Consejo de Facultad</strong>
+                  <p>Recibida para revisión · Acuerdo pendiente</p>
+                  <small>📅 Recibida 14/10/2026 · En sesión ordinaria</small>
+                  <button class="btn-sm btn-primary" style="margin-top:.5rem" onclick="elevarPropuesta()">Elevar a Consejo Universitario →</button>
+                </div>
+              </div>
+              <div class="prop-connector"></div>
+              <div class="prop-step pending-step">
+                <div class="prop-step-icon">○</div>
+                <div class="prop-step-body">
+                  <strong>3. Consejo Universitario</strong>
+                  <p>Esperando elevación del Consejo de Facultad</p>
+                  <small>Pendiente</small>
+                </div>
+              </div>
+              <div class="prop-connector"></div>
+              <div class="prop-step pending-step">
+                <div class="prop-step-icon">○</div>
+                <div class="prop-step-body">
+                  <strong>4. Decisión Final</strong>
+                  <p>Aprobado / Denegado por Consejo Universitario</p>
+                  <small>Pendiente — decisión terminal</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="prop-footer">
+              <small>⚠ La aprobación de esta propuesta no cambia automáticamente la categoría del docente. Requiere resolución institucional oficial.</small>
+            </div>
+          </div>
+
+          <!-- Segunda propuesta -->
+          <div class="card propuesta-card" style="margin-top:1.5rem">
+            <div class="prop-top">
+              <div>
+                <h3>Propuesta PROP-2025-I-003</h3>
+                <p>Dr. Luis Torres Peralta → Plaza: Principal TC, Depto. Medicina Interna</p>
+                <p><small>Convocatoria PROP-2025-I · Puntaje: 78.5 pts · Puesto 1</small></p>
+              </div>
+              <span class="badge badge-green" style="font-size:.95rem; padding:.4rem .9rem">✓ Aprobada</span>
+            </div>
+
+            <div class="prop-timeline">
+              <div class="prop-step done"><div class="prop-step-icon">✓</div><div class="prop-step-body"><strong>1. Decanato</strong><small>📅 10/05/2025</small></div></div>
+              <div class="prop-connector done-line"></div>
+              <div class="prop-step done"><div class="prop-step-icon">✓</div><div class="prop-step-body"><strong>2. Consejo de Facultad</strong><small>📅 20/05/2025</small></div></div>
+              <div class="prop-connector done-line"></div>
+              <div class="prop-step done"><div class="prop-step-icon">✓</div><div class="prop-step-body"><strong>3. Consejo Universitario</strong><small>📅 05/06/2025</small></div></div>
+              <div class="prop-connector done-line"></div>
+              <div class="prop-step done"><div class="prop-step-icon">✓</div><div class="prop-step-body"><strong>4. Decisión Final</strong><p>APROBADA · Resolución N.º 255-CU-2025</p><small>📅 10/06/2025</small></div></div>
+            </div>
+            <div class="prop-footer ok"><small>✓ Propuesta aprobada. Resolución N.º 255-CU-2025 emitida el 10/06/2025.</small></div>
+          </div>
+        </section>
+
+        <!-- ===== AUDITORÍA ===== -->
+        <section class="view" id="view-auditoria">
+          <div class="view-header">
+            <div>
+              <h1>Historial y Auditoría</h1>
+              <p class="view-sub">Registro inmutable de todas las operaciones del sistema</p>
+            </div>
+            <button class="btn-outline" onclick="showToast('Exportando log de auditoría...','success')">📥 Exportar CSV</button>
+          </div>
+
+          <div class="filter-row">
+            <input type="text" class="input-search" placeholder="🔍 Buscar por docente, acción o usuario..." />
+            <select class="select-filter"><option>Todas las acciones</option><option>Verificar mérito</option><option>Observar mérito</option><option>Cerrar evaluación</option><option>Elevar propuesta</option></select>
+            <input type="date" class="input-search" style="max-width:160px" value="2026-10-14" />
+            <input type="date" class="input-search" style="max-width:160px" value="2026-10-15" />
+          </div>
+
+          <div class="card">
+            <table class="data-table">
+              <thead>
+                <tr><th>#</th><th>Fecha / Hora</th><th>Usuario</th><th>Rol</th><th>Acción</th><th>Entidad</th><th>Antes → Después</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><small>#1042</small></td><td><small>15/10/2026 00:08:33</small></td><td>mgarcia</td><td>URH</td><td><span class="badge badge-green">verificar_merito</span></td><td>Mérito #338 — Dr. Rodríguez</td><td><span class="state-change">pendiente → verificado</span></td></tr>
+                <tr><td><small>#1041</small></td><td><small>15/10/2026 00:05:12</small></td><td>jperez</td><td>Comisión</td><td><span class="badge badge-blue">cerrar_evaluacion</span></td><td>Solicitud #042 — Mg. Flores</td><td><span class="state-change">presentada → evaluada</span></td></tr>
+                <tr><td><small>#1040</small></td><td><small>14/10/2026 23:52:01</small></td><td>aflores</td><td>Docente</td><td><span class="badge badge-yellow">subir_documento</span></td><td>Mérito #337 — ponencia CONIC</td><td><span class="state-change">— → pendiente</span></td></tr>
+                <tr><td><small>#1039</small></td><td><small>14/10/2026 23:40:18</small></td><td>mgarcia</td><td>URH</td><td><span class="badge badge-red">observar_merito</span></td><td>Mérito #335 — Dr. Quispe</td><td><span class="state-change">pendiente → observado</span></td></tr>
+                <tr><td><small>#1038</small></td><td><small>14/10/2026 22:15:44</small></td><td>palva</td><td>Decanato</td><td><span class="badge badge-purple">preparar_propuesta</span></td><td>Propuesta #001 — Mg. Flores</td><td><span class="state-change">— → en_decanato</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ===== ADMINISTRACIÓN ===== -->
+        <section class="view" id="view-admin">
+          <div class="view-header">
+            <div>
+              <h1>Administración del Sistema</h1>
+              <p class="view-sub">Gestión de usuarios, roles y unidades autorizadas</p>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-nuevo-usuario')">+ Nuevo Usuario</button>
+          </div>
+
+          <div class="admin-grid">
+            <div class="card">
+              <div class="card-header"><h3>Usuarios del sistema</h3><span class="badge badge-blue">48 activos</span></div>
+              <table class="data-table">
+                <thead>
+                  <tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Unidad</th><th>Vigente hasta</th><th>Estado</th><th></th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>mgarcia</code></td>
+                    <td>María García López</td>
+                    <td><span class="badge badge-blue">URH/Legajos</span></td>
+                    <td>Oficina URH Central</td>
+                    <td>31/12/2026</td>
+                    <td><span class="badge badge-green">Activo</span></td>
+                    <td><button class="btn-sm btn-outline" onclick="showToast('Editando usuario mgarcia','info')">✏</button></td>
+                  </tr>
+                  <tr>
+                    <td><code>jperez</code></td>
+                    <td>Juan Pérez Silva</td>
+                    <td><span class="badge badge-purple">Comisión</span></td>
+                    <td>Fac. Ingeniería</td>
+                    <td>30/11/2025</td>
+                    <td><span class="badge badge-green">Activo</span></td>
+                    <td><button class="btn-sm btn-outline">✏</button></td>
+                  </tr>
+                  <tr>
+                    <td><code>palva</code></td>
+                    <td>Pedro Alva Ruiz</td>
+                    <td><span class="badge badge-yellow">Decanato</span></td>
+                    <td>Fac. Ingeniería Civil</td>
+                    <td>31/07/2026</td>
+                    <td><span class="badge badge-green">Activo</span></td>
+                    <td><button class="btn-sm btn-outline">✏</button></td>
+                  </tr>
+                  <tr>
+                    <td><code>aflores</code></td>
+                    <td>Ana Flores Mendoza</td>
+                    <td><span class="badge badge-green">Docente</span></td>
+                    <td>Depto. Estructuras</td>
+                    <td>31/12/2030</td>
+                    <td><span class="badge badge-green">Activo</span></td>
+                    <td><button class="btn-sm btn-outline">✏</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ===== MODALS ===== -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeAllModals()"></div>
+
+  <!-- Modal: Nuevo Mérito -->
+  <div class="modal" id="modal-nuevo-merito">
+    <div class="modal-header">
+      <h3>Agregar Nuevo Mérito</h3>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Tipo de mérito</label>
+        <select class="input-search">
+          <option>Grado académico</option>
+          <option>Investigación / Publicación</option>
+          <option>Ponencia</option>
+          <option>Docencia universitaria</option>
+          <option>Extensión / Gestión</option>
+          <option>Capacitación</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Título / Descripción</label>
+        <input type="text" class="input-search" placeholder="Ej: Doctor en Ingeniería Civil — PUCP" style="width:100%" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Institución</label>
+          <input type="text" class="input-search" placeholder="Ej: Universidad Nacional Mayor de San Marcos" />
+        </div>
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" class="input-search" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Documento de sustento (PDF, máx. 10 MB)</label>
+        <div class="file-drop" onclick="showToast('Selecciona un archivo PDF','info')">
+          <span>📄 Arrastra tu PDF aquí o haz clic para seleccionar</span>
+          <small>Formatos aceptados: PDF · Tamaño máximo: 10 MB</small>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeAllModals()">Cancelar</button>
+      <button class="btn-primary" onclick="closeAllModals(); showToast('Mérito registrado correctamente. Estado: Pendiente de verificación','success')">Guardar mérito</button>
+    </div>
+  </div>
+
+  <!-- Modal: Verificar mérito -->
+  <div class="modal" id="modal-verificar">
+    <div class="modal-header">
+      <h3>Revisar Mérito</h3>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="verif-info">
+        <p><strong>Docente:</strong> Dr. José Quispe Ramírez</p>
+        <p><strong>Tipo:</strong> Ponencia</p>
+        <p><strong>Descripción:</strong> Ponencia en Congreso Nacional de Derecho — Lima 2024</p>
+        <p><strong>SHA-256:</strong> <small>b4d7f1a3c6e9b2d5f8a1c4e7b0d3f6a9c2e5b8d1f4a7c0e3b6d9f2a5c8e1b4d7</small></p>
+      </div>
+      <div class="pdf-mini-viewer">📄 Vista del documento (simulado) — haz zoom en el PDF para verificar que la constancia indique "ponente"</div>
+      <div class="form-group" style="margin-top:1rem">
+        <label><strong>Decisión de revisión:</strong></label>
+        <div class="radio-group">
+          <label><input type="radio" name="decision" value="verificar" checked /> ✓ Verificar — el documento es válido e íntegro</label>
+          <label><input type="radio" name="decision" value="observar" /> ⚠ Observar — hay un problema con el documento</label>
+        </div>
+      </div>
+      <div class="form-group" id="obs-text-group" style="display:none">
+        <label>Observación (obligatoria):</label>
+        <textarea rows="3" placeholder="Describe el problema encontrado..." class="input-search" style="width:100%"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeAllModals()">Cancelar</button>
+      <button class="btn-primary" onclick="closeAllModals(); showToast('Mérito verificado correctamente','success')">Confirmar revisión</button>
+    </div>
+  </div>
+
+  <!-- Modal: Corregir mérito observado -->
+  <div class="modal" id="modal-corregir">
+    <div class="modal-header">
+      <h3>Corregir Mérito Observado</h3>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="obs-alert">
+        <strong>⚠ Observación recibida:</strong>
+        <p>La constancia no indica "ponente". Ingrese el certificado de participación como ponente del congreso.</p>
+      </div>
+      <div class="form-group" style="margin-top:1rem">
+        <label>Nuevo documento de sustento (reemplaza al anterior sin eliminarlo):</label>
+        <div class="file-drop" onclick="showToast('Selecciona tu nuevo PDF','info')">
+          <span>📄 Arrastra tu nuevo PDF aquí</span>
+          <small>El documento anterior quedará en el historial</small>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Nota de corrección (opcional):</label>
+        <textarea rows="2" class="input-search" style="width:100%" placeholder="Adjunto certificado oficial de participación como ponente..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeAllModals()">Cancelar</button>
+      <button class="btn-primary" onclick="closeAllModals(); showToast('Corrección enviada. El mérito vuelve a estado Pendiente','success')">Enviar corrección</button>
+    </div>
+  </div>
+
+  <!-- Modal: Nueva convocatoria -->
+  <div class="modal modal-wide" id="modal-nueva-conv">
+    <div class="modal-header">
+      <h3>Nueva Convocatoria de Promoción</h3>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Código</label>
+          <input type="text" class="input-search" placeholder="Ej: PROP-2026-I" />
+        </div>
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" class="input-search" placeholder="Promoción Docente 2026 — Sem. I" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Inicio de recepción</label>
+          <input type="date" class="input-search" />
+        </div>
+        <div class="form-group">
+          <label>Fin de recepción</label>
+          <input type="date" class="input-search" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Rúbrica aprobada</label>
+        <select class="input-search">
+          <option>RUBR-2026-V1 (borrador)</option>
+          <option>RUBR-2025-V2 (aprobada)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Resolución de referencia</label>
+        <input type="text" class="input-search" placeholder="Ej: Res. 255-CU-2026" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeAllModals()">Cancelar</button>
+      <button class="btn-primary" onclick="closeAllModals(); showToast('Convocatoria creada en estado Abierta','success')">Crear convocatoria</button>
+    </div>
+  </div>
+
+  <!-- Modal: Nuevo usuario -->
+  <div class="modal" id="modal-nuevo-usuario">
+    <div class="modal-header">
+      <h3>Nuevo Usuario</h3>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>Nombre de usuario (institucional)</label><input type="text" class="input-search" placeholder="Ej: jperez" style="width:100%" /></div>
+      <div class="form-group"><label>Nombre completo</label><input type="text" class="input-search" placeholder="Juan Pérez Silva" style="width:100%" /></div>
+      <div class="form-group"><label>Correo institucional</label><input type="email" class="input-search" placeholder="jperez@unp.edu.pe" style="width:100%" /></div>
+      <div class="form-row">
+        <div class="form-group"><label>Rol</label>
+          <select class="input-search"><option>Docente</option><option>URH/Legajos</option><option>Comisión</option><option>Decanato</option><option>Consejo Facultad</option><option>Consejo Universitario</option></select>
+        </div>
+        <div class="form-group"><label>Unidad / Facultad</label>
+          <select class="input-search"><option>Ingeniería Civil</option><option>Medicina Humana</option><option>Derecho</option><option>Educación</option><option>URH Central</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Vigente hasta</label><input type="date" class="input-search" style="width:100%" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeAllModals()">Cancelar</button>
+      <button class="btn-primary" onclick="closeAllModals(); showToast('Usuario creado. El sistema no almacena contraseñas (OIDC institucional)','success')">Crear usuario</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
