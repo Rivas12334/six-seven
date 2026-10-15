@@ -18,6 +18,25 @@ const breadcrumbs = {
 };
 
 function navigate(viewId) {
+  // Role guard: certain views are restricted by role
+  const activeRole = sessionStorage.getItem('siglepro_role') ||
+    document.getElementById('role-select')?.value || 'urh';
+
+  const restricted = {
+    legajo:   ['urh', 'comision', 'decanato', 'admin'],   // solo docente
+    admin:    ['docente', 'comision', 'decanato', 'urh'],  // solo admin
+  };
+
+  if (restricted[viewId] && restricted[viewId].includes(activeRole)) {
+    if (viewId === 'legajo') {
+      showToast('⚠️ El perfil Legajo es exclusivo de Docentes Ordinarios.', 'warning');
+      viewId = (activeRole === 'admin') ? 'admin' : 'dashboard';
+    } else if (viewId === 'admin') {
+      showToast('⚠️ Acceso restringido: solo Administrador TI.', 'warning');
+      viewId = 'dashboard';
+    }
+  }
+
   // Hide all views
   views.forEach(v => {
     const el = document.getElementById('view-' + v);
@@ -52,6 +71,7 @@ function navigate(viewId) {
     document.getElementById('sidebar').classList.remove('mobile-open');
   }
 }
+
 
 // --- Sidebar toggle ---
 function toggleSidebar() {
@@ -108,14 +128,36 @@ function changeRole(role) {
 }
 
 function adjustNavByRole(role) {
-  const navMeritos = document.getElementById('nav-meritos');
-  const navAdmin = document.getElementById('nav-admin');
+  const navLegajo    = document.getElementById('nav-legajo');
+  const navMeritos   = document.getElementById('nav-meritos');
+  const navEval      = document.getElementById('nav-evaluacion');
+  const navOrden     = document.getElementById('nav-orden');
   const navPropuesta = document.getElementById('nav-propuesta');
+  const navAuditoria = document.getElementById('nav-auditoria');
+  const navAdmin     = document.getElementById('nav-admin');
 
-  if (navMeritos) navMeritos.style.display = (role === 'docente') ? 'none' : 'flex';
-  if (navAdmin) navAdmin.style.display = (role === 'admin') ? 'flex' : (role === 'urh' ? 'flex' : 'none');
+  // Mi Legajo: solo docentes tienen legajo personal
+  if (navLegajo)    navLegajo.style.display    = (role === 'docente') ? 'flex' : 'none';
+
+  // Verificación de Méritos: URH, Comisión, Decanato, Admin
+  if (navMeritos)   navMeritos.style.display   = (role === 'docente') ? 'none' : 'flex';
+
+  // Evaluación: Comisión, Decanato, Admin
+  if (navEval)      navEval.style.display      = (role === 'docente' || role === 'urh') ? 'none' : 'flex';
+
+  // Orden de Mérito: todos menos docente
+  if (navOrden)     navOrden.style.display     = (role === 'docente') ? 'none' : 'flex';
+
+  // Trámite Propuesta: URH, Decanato, Admin
   if (navPropuesta) navPropuesta.style.display = (role === 'docente' || role === 'comision') ? 'none' : 'flex';
+
+  // Auditoría: Decanato y Admin
+  if (navAuditoria) navAuditoria.style.display = (role === 'admin' || role === 'decanato') ? 'flex' : 'none';
+
+  // Administración: solo Admin
+  if (navAdmin)     navAdmin.style.display     = (role === 'admin') ? 'flex' : 'none';
 }
+
 
 // --- Tab switching ---
 function switchTab(tabId, btn) {
