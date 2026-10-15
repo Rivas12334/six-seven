@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIGLEPRO · Inicio de Sesión — UNP</title>
+  <meta name="description" content="Acceso al Sistema de Gestión de Legajos y Promoción Docente de la Universidad Nacional de Piura." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* =============================================
+       SIGLEPRO · LOGIN — styles
+    ============================================= */
+    :root {
+      --clr-primary:       #003082;
+      --clr-primary-dark:  #001f5e;
+      --clr-primary-mid:   #00409a;
+      --clr-accent:        #C8102E;
+      --clr-accent-hover:  #a00d24;
+      --clr-bg:            #F4F6FB;
+      --clr-surface:       #ffffff;
+      --clr-border:        #E2E8F0;
+      --clr-text:          #1E293B;
+      --clr-text-muted:    #64748B;
+      --clr-text-light:    #94A3B8;
+      --radius:            12px;
+      --radius-sm:         8px;
+      --shadow:            0 4px 24px rgba(0,0,0,.10);
+      --shadow-lg:         0 12px 48px rgba(0,0,0,.18);
+      --transition:        0.25s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      background: #F4F6FB;
+      color: var(--clr-text);
+      overflow: hidden;
+    }
+
+    /* ---- Left panel ---- */
+    .login-left {
+      flex: 1;
+      position: relative;
+      background: linear-gradient(145deg, #001f5e 0%, #003082 45%, #00409a 80%, #0052c2 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 40px;
+      overflow: hidden;
+    }
+
+    .login-left::before,
+    .login-left::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.07;
+    }
+    .login-left::before {
+      width: 520px; height: 520px;
+      background: #fff;
+      top: -180px; left: -180px;
+    }
+    .login-left::after {
+      width: 380px; height: 380px;
+      background: #fff;
+      bottom: -140px; right: -100px;
+    }
+
+    .deco-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.12);
+    }
+    .deco-ring-1 { width: 320px; height: 320px; top: -60px; right: -80px; }
+    .deco-ring-2 { width: 200px; height: 200px; bottom: 60px; left: 20px; }
+    .deco-ring-3 { width: 120px; height: 120px; top: 200px; right: 60px; }
+
+    .left-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 380px;
+    }
+
+    .unp-emblem {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.10);
+      border: 2px solid rgba(255,255,255,.20);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 28px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.25);
+      animation: emblemFloat 4s ease-in-out infinite;
+    }
+    @keyframes emblemFloat {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    .left-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .left-title span { color: #FFD700; }
+
+    .left-subtitle {
+      font-size: 14px;
+      color: rgba(255,255,255,.65);
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    .actors-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,.45);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .actors-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .actor-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 50px;
+      padding: 10px 18px;
+      backdrop-filter: blur(6px);
+      transition: background var(--transition), transform var(--transition);
+    }
+    .actor-pill:hover {
+      background: rgba(255,255,255,.15);
+      transform: translateX(4px);
+    }
+
+    .actor-icon {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .actor-icon.docente  { background: rgba(59,130,246,.3); }
+    .actor-icon.urh      { background: rgba(34,197,94,.3); }
+    .actor-icon.comision { background: rgba(245,158,11,.3); }
+    .actor-icon.decanato { background: rgba(139,92,246,.3); }
+    .actor-icon.admin    { background: rgba(200,16,46,.3); }
+
+    .actor-info { text-align: left; }
+    .actor-name { font-size: 13px; font-weight: 600; color: #fff; display: block; }
+    .actor-desc { font-size: 11px; color: rgba(255,255,255,.50); }
+
+    /* ---- Right panel ---- */
+    .login-right {
+      width: 480px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 48px 40px;
+      background: #fff;
+      overflow-y: auto;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 380px;
+      animation: slideUp .5s cubic-bezier(.16,1,.3,1) both;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-header { text-align: center; margin-bottom: 36px; }
+
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--clr-primary);
+      border-radius: 50px;
+      padding: 8px 18px 8px 10px;
+      margin-bottom: 24px;
+    }
+    .logo-badge-icon {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-badge-text { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
+
+    .login-title {
+      font-size: 26px; font-weight: 800;
+      color: var(--clr-text); letter-spacing: -0.5px; margin-bottom: 6px;
+    }
+    .login-desc { font-size: 13px; color: var(--clr-text-muted); }
+
+    /* Role tabs */
+    .role-tabs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      background: #F4F6FB;
+      border-radius: var(--radius);
+      padding: 6px;
+      margin-bottom: 28px;
+    }
+
+    .role-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 4px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      transition: background var(--transition);
+      position: relative;
+    }
+    .role-tab:hover { background: rgba(0,48,130,.08); }
+    .role-tab.active { background: #fff; box-shadow: var(--shadow); }
+    .role-tab.active .rt-icon { color: var(--clr-primary); }
+    .role-tab.active .rt-label { color: var(--clr-primary); font-weight: 600; }
+
+    .rt-icon  { font-size: 20px; color: var(--clr-text-muted); transition: color var(--transition); }
+    .rt-label { font-size: 9.5px; color: var(--clr-text-muted); font-weight: 500; text-align: center; line-height: 1.2; transition: color var(--transition); }
+
+    .role-tab::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--clr-text);
+      color: #fff;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition);
+    }
+    .role-tab:hover::after { opacity: 1; }
+
+    /* Current role badge */
+    .current-role-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--clr-primary-dark);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 24px;
+    }
+    .crb-icon { font-size: 18px; }
+    .crb-info { flex: 1; }
+    .crb-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,.55); display: block; }
+    .crb-name  { font-size: 13px; font-weight: 600; color: #fff; display: block; }
+    .crb-dot   { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+
+    /* Form */
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--clr-text); margin-bottom: 7px; letter-spacing: 0.2px; }
+
+    .input-wrapper { position: relative; }
+    .input-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      font-size: 16px; color: var(--clr-text-light); pointer-events: none;
+      transition: color var(--transition);
+    }
+    .input-wrapper:focus-within .input-icon { color: var(--clr-primary); }
+
+    .form-input {
+      width: 100%; height: 46px;
+      background: #F8FAFC;
+      border: 1.5px solid var(--clr-border);
+      border-radius: var(--radius-sm);
+      padding: 0 14px 0 44px;
+      font-size: 14px; color: var(--clr-text);
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--clr-primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(0,48,130,.10);
+    }
+
+    .toggle-pass {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      font-size: 16px; color: var(--clr-text-light); padding: 0; line-height: 1;
+      transition: color var(--transition);
+    }
+    .toggle-pass:hover { color: var(--clr-primary); }
+    .pass-input { padding-right: 44px; }
+
+    .form-extras {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;
+    }
+    .checkbox-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .checkbox-wrap input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--clr-primary); cursor: pointer; }
+    .checkbox-wrap span { font-size: 13px; color: var(--clr-text-muted); }
+    .forgot-link { font-size: 13px; font-weight: 500; color: var(--clr-primary); cursor: pointer; transition: color var(--transition); }
+    .forgot-link:hover { color: var(--clr-accent); }
+
+    .btn-login {
+      width: 100%; height: 48px;
+      background: linear-gradient(135deg, var(--clr-primary) 0%, var(--clr-primary-mid) 100%);
+      border: none; border-radius: var(--radius-sm);
+      color: #fff; font-size: 15px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.3px;
+      transition: all var(--transition);
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-login::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 60%);
+      opacity: 0; transition: opacity var(--transition);
+    }
+    .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,48,130,.35); }
+    .btn-login:hover::before { opacity: 1; }
+    .btn-login:active { transform: translateY(0); }
+    .btn-login-icon { font-size: 18px; }
+
+    .spinner {
+      display: none; width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,.35);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-login.loading .btn-text { display: none; }
+    .btn-login.loading .spinner { display: block; }
+
+    /* Error */
+    .error-msg {
+      display: none;
+      background: #FEE2E2; border: 1px solid #FCA5A5;
+      border-radius: var(--radius-sm); padding: 10px 14px;
+      font-size: 13px; color: #B91C1C; margin-bottom: 18px;
+      align-items: center; gap: 8px;
+    }
+    .error-msg.visible { display: flex; }
+
+    /* Divider */
+    .divider {
+      display: flex; align-items: center; gap: 12px; margin: 24px 0;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--clr-border); }
+    .divider span { font-size: 12px; color: var(--clr-text-light); font-weight: 500; }
+
+    /* Demo grid */
+    .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .demo-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 12px;
+      background: #F8FAFC; border: 1.5px solid var(--clr-border);
+      border-radius: var(--radius-sm); cursor: pointer;
+      transition: all var(--transition); text-align: left;
+    }
+    .demo-btn:hover { border-color: var(--clr-primary); background: var(--clr-primary); }
+    .demo-btn:hover .demo-name,
+    .demo-btn:hover .demo-role { color: #fff; }
+    .demo-icon { font-size: 18px; }
+    .demo-name { font-size: 12px; font-weight: 600; color: var(--clr-text); display: block; transition: color var(--transition); }
+    .demo-role { font-size: 10px; color: var(--clr-text-muted); display: block; transition: color var(--transition); }
+
+    /* Footer */
+    .login-footer {
+      text-align: center; margin-top: 28px; padding-top: 24px;
+      border-top: 1px solid var(--clr-border);
+    }
+    .login-footer p { font-size: 11px; color: var(--clr-text-light); line-height: 1.7; }
+    .login-footer strong { color: var(--clr-text-muted); }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--clr-text); color: #fff;
+      padding: 12px 20px; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.35s cubic-bezier(.17,.67,.38,1.3);
+      z-index: 999; display: flex; align-items: center; gap: 8px;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { background: #166534; }
+    #toast.error   { background: #991b1b; }
+    #toast.info    { background: #1d4ed8; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      body { flex-direction: column; overflow: auto; }
+      .login-left { display: none; }
+      .login-right { width: 100%; min-height: 100vh; padding: 32px 24px; }
+    }
+    @media (max-width: 400px) {
+      .role-tabs { grid-template-columns: repeat(3, 1fr); }
+      .demo-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== LEFT PANEL ========== -->
+  <div class="login-left">
+    <div class="deco-ring deco-ring-1"></div>
+    <div class="deco-ring deco-ring-2"></div>
+    <div class="deco-ring deco-ring-3"></div>
+
+    <div class="left-content">
+      <!-- UNP Emblem -->
+      <div class="unp-emblem">
+        <svg width="70" height="70" viewBox="0 0 70 70" fill="none">
+          <circle cx="35" cy="35" r="33" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
+          <circle cx="35" cy="35" r="27" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+          <text x="50%" y="40%" text-anchor="middle" dominant-baseline="middle"
+                fill="white" font-size="18" font-weight="800" font-family="Inter">UNP</text>
+          <text x="50%" y="62%" text-anchor="middle" dominant-baseline="middle"
+                fill="rgba(255,255,255,.6)" font-size="7" font-weight="500" font-family="Inter"
+                letter-spacing="1">1961</text>
+        </svg>
+      </div>
+
+      <h1 class="left-title">SIGLE<span>PRO</span></h1>
+      <p class="left-subtitle">
+        Sistema de Gestión de Legajos<br>y Promoción Docente<br>
+        <strong style="color:rgba(255,255,255,.5);font-weight:500;">Universidad Nacional de Piura</strong>
+      </p>
+
+      <p class="actors-label">Actores del sistema</p>
+
+      <div class="actors-grid">
+        <div class="actor-pill">
+          <div class="actor-icon docente">🎓</div>
+          <div class="actor-info">
+            <span class="actor-name">Docente Ordinario</span>
+            <span class="actor-desc">Registro y seguimiento de legajo</span>
+          </div>
+        </div>
+        <div class="actor-pill">
+          <div class="actor-icon urh">📂</div>
+          <div class="actor-info">
+            <span class="actor-name">Personal URH / Legajos</span>
+            <span class="actor-desc">Gestión y verificación documental</span>
+          </div>
+        </div>
+        <div class="actor-pill">
+          <div class="actor-icon comision">⚖️</div>
+          <div class="actor-info">
+            <span class="actor-name">Comisión Evaluadora</span>
+            <span class="actor-desc">Evaluación de méritos y puntajes</span>
+          </div>
+        </div>
+        <div class="actor-pill">
+          <div class="actor-icon decanato">🏛️</div>
+          <div class="actor-info">
+            <span class="actor-name">Decanato / Consejo</span>
+            <span class="actor-desc">Aprobación y resoluciones</span>
+          </div>
+        </div>
+        <div class="actor-pill">
+          <div class="actor-icon admin">⚙️</div>
+          <div class="actor-info">
+            <span class="actor-name">Administrador TI</span>
+            <span class="actor-desc">Configuración y auditoría del sistema</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== RIGHT PANEL (FORM) ========== -->
+  <div class="login-right">
+    <div class="login-card">
+
+      <!-- Header -->
+      <div class="login-header">
+        <div class="logo-badge">
+          <div class="logo-badge-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="9" fill="rgba(255,255,255,.2)"/>
+              <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle"
+                    fill="white" font-size="8" font-weight="700" font-family="Inter">UNP</text>
+            </svg>
+          </div>
+          <span class="logo-badge-text">SIGLEPRO</span>
+        </div>
+        <h2 class="login-title">Bienvenido</h2>
+        <p class="login-desc">Selecciona tu rol e inicia sesión para continuar</p>
+      </div>
+
+      <!-- Role Selector Tabs -->
+      <div class="role-tabs" id="role-tabs" role="tablist" aria-label="Selector de rol">
+        <button class="role-tab active" id="tab-docente" role="tab" aria-selected="true"
+                data-role="docente" data-tooltip="Docente Ordinario"
+                onclick="selectRole('docente', this)">
+          <span class="rt-icon">🎓</span>
+          <span class="rt-label">Docente</span>
+        </button>
+        <button class="role-tab" id="tab-urh" role="tab" aria-selected="false"
+                data-role="urh" data-tooltip="Personal URH / Legajos"
+                onclick="selectRole('urh', this)">
+          <span class="rt-icon">📂</span>
+          <span class="rt-label">URH</span>
+        </button>
+        <button class="role-tab" id="tab-comision" role="tab" aria-selected="false"
+                data-role="comision" data-tooltip="Comisión Evaluadora"
+                onclick="selectRole('comision', this)">
+          <span class="rt-icon">⚖️</span>
+          <span class="rt-label">Comisión</span>
+        </button>
+        <button class="role-tab" id="tab-decanato" role="tab" aria-selected="false"
+                data-role="decanato" data-tooltip="Decanato / Consejo"
+                onclick="selectRole('decanato', this)">
+          <span class="rt-icon">🏛️</span>
+          <span class="rt-label">Decanato</span>
+        </button>
+        <button class="role-tab" id="tab-admin" role="tab" aria-selected="false"
+                data-role="admin" data-tooltip="Administrador TI"
+                onclick="selectRole('admin', this)">
+          <span class="rt-icon">⚙️</span>
+          <span class="rt-label">Admin</span>
+        </button>
+      </div>
+
+      <!-- Current Role Badge -->
+      <div class="current-role-badge" id="current-role-badge">
+        <span class="crb-icon" id="crb-icon">🎓</span>
+        <div class="crb-info">
+          <span class="crb-label">Accediendo como</span>
+          <span class="crb-name" id="crb-name">Docente Ordinario</span>
+        </div>
+        <div class="crb-dot"></div>
+      </div>
+
+      <!-- Error message -->
+      <div class="error-msg" id="error-msg" role="alert">
+        <span>⚠️</span>
+        <span id="error-text">Usuario o contraseña incorrectos.</span>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" novalidate onsubmit="handleLogin(event)">
+
+        <div class="form-group">
+          <label class="form-label" for="input-user">Usuario / DNI</label>
+          <div class="input-wrapper">
+            <input id="input-user" class="form-input" type="text"
+                   placeholder="Ingresa tu usuario o DNI"
+                   autocomplete="username" required />
+            <span class="input-icon">👤</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-pass">Contraseña</label>
+          <div class="input-wrapper">
+            <input id="input-pass" class="form-input pass-input" type="password"
+                   placeholder="Ingresa tu contraseña"
+                   autocomplete="current-password" required />
+            <span class="input-icon">🔒</span>
+            <button type="button" class="toggle-pass" id="toggle-pass"
+                    aria-label="Mostrar contraseña" onclick="togglePassword()">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-extras">
+          <label class="checkbox-wrap">
+            <input type="checkbox" id="remember-me" />
+            <span>Recordarme</span>
+          </label>
+          <span class="forgot-link" onclick="showForgot()">¿Olvidaste tu contraseña?</span>
+        </div>
+
+        <button type="submit" class="btn-login" id="btn-login">
+          <span class="btn-text">
+            <span class="btn-login-icon">🔐</span>
+            Iniciar Sesión
+          </span>
+          <div class="spinner"></div>
+        </button>
+
+      </form>
+
+      <!-- Divider + Demo accounts -->
+      <div class="divider"><span>Accesos de demostración</span></div>
+
+      <div class="demo-grid">
+        <button class="demo-btn" onclick="quickLogin('docente')" id="demo-docente">
+          <span class="demo-icon">🎓</span>
+          <div>
+            <span class="demo-name">Carlos Rodríguez</span>
+            <span class="demo-role">Docente Ordinario</span>
+          </div>
+        </button>
+        <button class="demo-btn" onclick="quickLogin('urh')" id="demo-urh">
+          <span class="demo-icon">📂</span>
+          <div>
+            <span class="demo-name">María García</span>
+            <span class="demo-role">Personal URH</span>
+          </div>
+        </button>
+        <button class="demo-btn" onclick="quickLogin('comision')" id="demo-comision">
+          <span class="demo-icon">⚖️</span>
+          <div>
+            <span class="demo-name">Juan Pérez Silva</span>
+            <span class="demo-role">Comisión Evaluadora</span>
+          </div>
+        </button>
+        <button class="demo-btn" onclick="quickLogin('decanato')" id="demo-decanato">
+          <span class="demo-icon">🏛️</span>
+          <div>
+            <span class="demo-name">Pedro Alva Ruiz</span>
+            <span class="demo-role">Decanato / Consejo</span>
+          </div>
+        </button>
+        <button class="demo-btn" onclick="quickLogin('admin')" id="demo-admin"
+                style="grid-column: span 2;">
+          <span class="demo-icon">⚙️</span>
+          <div>
+            <span class="demo-name">Administrador TI</span>
+            <span class="demo-role">Acceso total al sistema</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Footer -->
+      <div class="login-footer">
+        <p>
+          <strong>SIGLEPRO v2.0</strong> · Universidad Nacional de Piura<br>
+          Oficina de Recursos Humanos · Área de Legajos<br>
+          <span>© 2025 UNP — Todos los derechos reservados</span>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // =============================================
+    // SIGLEPRO · Login Logic
+    // =============================================
+
+    const roles = {
+      docente:  { name: 'Docente Ordinario',      icon: '🎓', user: 'docente01',  pass: 'doc2025' },
+      urh:      { name: 'Personal URH / Legajos', icon: '📂', user: 'urh01',      pass: 'urh2025' },
+      comision: { name: 'Comisión Evaluadora',    icon: '⚖️', user: 'comision01', pass: 'com2025' },
+      decanato: { name: 'Decanato / Consejo',     icon: '🏛️', user: 'decanato01', pass: 'dec2025' },
+      admin:    { name: 'Administrador TI',       icon: '⚙️', user: 'admin',      pass: 'admin2025' },
+    };
+
+    let currentRole = 'docente';
+
+    function selectRole(role, btn) {
+      currentRole = role;
+
+      document.querySelectorAll('.role-tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      const r = roles[role];
+      document.getElementById('crb-icon').textContent = r.icon;
+      document.getElementById('crb-name').textContent = r.name;
+
+      hideError();
+    }
+
+    let passVisible = false;
+    function togglePassword() {
+      passVisible = !passVisible;
+      const inp = document.getElementById('input-pass');
+      const btn = document.getElementById('toggle-pass');
+      inp.type = passVisible ? 'text' : 'password';
+      btn.textContent = passVisible ? '🙈' : '👁️';
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      document.getElementById('error-text').textContent = msg;
+      el.classList.add('visible');
+    }
+    function hideError() {
+      document.getElementById('error-msg').classList.remove('visible');
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      hideError();
+
+      const userInput = document.getElementById('input-user').value.trim();
+      const passInput = document.getElementById('input-pass').value.trim();
+
+      if (!userInput || !passInput) {
+        showError('Por favor completa todos los campos.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-login');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+
+        const roleData = roles[currentRole];
+        const validUser = userInput === roleData.user;
+        const validPass = passInput === roleData.pass;
+
+        if (validUser && validPass) {
+          sessionStorage.setItem('siglepro_role', currentRole);
+          sessionStorage.setItem('siglepro_user', roleData.name);
+
+          showToast('✅ Bienvenido · Redirigiendo...', 'success');
+
+          setTimeout(() => {
+            window.location.href = 'index.html?role=' + currentRole;
+          }, 1200);
+        } else {
+          showError('Usuario o contraseña incorrectos. Intenta de nuevo.');
+          shakeField('input-pass');
+        }
+      }, 1400);
+    }
+
+    function quickLogin(role) {
+      const tab = document.getElementById('tab-' + role);
+      selectRole(role, tab);
+      document.getElementById('input-user').value = roles[role].user;
+      document.getElementById('input-pass').value = roles[role].pass;
+      showToast('🎯 Credenciales de ' + roles[role].name + ' cargadas', 'info');
+    }
+
+    function shakeField(id) {
+      const el = document.getElementById(id);
+      el.style.animation = 'none';
+      el.offsetHeight;
+      el.style.animation = 'shake .4s ease';
+    }
+
+    function showForgot() {
+      showToast('📧 Contacta soporte técnico: tic@unp.edu.pe', 'info');
+    }
+
+    let toastTimer;
+    function showToast(msg, type) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'show ' + (type || '');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // Init from session (if returning from main app)
+    (function() {
+      const saved = sessionStorage.getItem('siglepro_role');
+      if (saved && roles[saved]) {
+        const tab = document.getElementById('tab-' + saved);
+        if (tab) selectRole(saved, tab);
+      }
+    })();
+
+    // Shake keyframe
+    const s = document.createElement('style');
+    s.textContent = '@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}';
+    document.head.appendChild(s);
+  </script>
+</body>
+</html>

@@ -302,13 +302,38 @@ document.addEventListener('keydown', (e) => {
 // =========================================
 // INIT
 // =========================================
+
+// --- Logout ---
+function logout() {
+  sessionStorage.removeItem('siglepro_role');
+  sessionStorage.removeItem('siglepro_user');
+  showToast('Sesión cerrada correctamente · Redirigiendo...', 'info');
+  setTimeout(() => { window.location.href = 'login.html'; }, 1000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  // Read role from URL param or sessionStorage
+  const params = new URLSearchParams(window.location.search);
+  const urlRole = params.get('role');
+  const storedRole = sessionStorage.getItem('siglepro_role');
+  const activeRole = urlRole || storedRole || 'urh';
+
+  // Apply role in the sidebar selector
+  const roleSelect = document.getElementById('role-select');
+  if (roleSelect) {
+    roleSelect.value = activeRole;
+    changeRole(activeRole);
+  } else {
+    adjustNavByRole(activeRole);
+  }
+
   // Start on dashboard
   navigate('dashboard');
 
-  // Show welcome toast after brief delay
+  // Personalized welcome toast
+  const userName = sessionStorage.getItem('siglepro_user') || roleNames[activeRole] || 'Usuario';
   setTimeout(() => {
-    showToast('Bienvenida, María García · Sistema SIGLEPRO UNP', 'success', 4000);
+    showToast('Bienvenido/a, ' + userName + ' · SIGLEPRO UNP', 'success', 4000);
   }, 600);
 
   // Simulate live badge update
@@ -339,7 +364,4 @@ document.addEventListener('DOMContentLoaded', () => {
       el.style.transform = 'none';
     }, 400);
   });
-
-  // Initialize role nav adjustments
-  adjustNavByRole('urh');
 });
