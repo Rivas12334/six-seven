@@ -1118,60 +1118,325 @@
           <div class="view-header">
             <div>
               <h1>Administración del Sistema</h1>
-              <p class="view-sub">Gestión de usuarios, roles y unidades autorizadas</p>
+              <p class="view-sub">Gestión de usuarios, roles, permisos y configuración de SIGLEPRO</p>
             </div>
-            <button class="btn-primary" onclick="openModal('modal-nuevo-usuario')">+ Nuevo Usuario</button>
+            <button class="btn-primary" onclick="openModal('modal-nuevo-usuario')">⚙ + Nuevo Usuario</button>
           </div>
 
-          <div class="admin-grid">
+          <!-- Stats rápidas de admin -->
+          <div class="stats-grid" style="margin-bottom:24px;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background:var(--clr-primary-light);color:var(--clr-primary)">👥</div>
+              <div class="stat-body">
+                <span class="stat-label">Usuarios Activos</span>
+                <span class="stat-value">48</span>
+                <span class="stat-change positive">↑ 3 este mes</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:var(--clr-green-bg);color:var(--clr-green)">🔐</div>
+              <div class="stat-body">
+                <span class="stat-label">Roles configurados</span>
+                <span class="stat-value">5</span>
+                <span class="stat-change">Docente · URH · Comisión · Decanato · Admin</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:var(--clr-yellow-bg);color:var(--clr-yellow)">⚠️</div>
+              <div class="stat-body">
+                <span class="stat-label">Cuentas por vencer</span>
+                <span class="stat-value">7</span>
+                <span class="stat-change negative">en los próximos 30 días</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:var(--clr-blue-bg);color:var(--clr-blue)">📋</div>
+              <div class="stat-body">
+                <span class="stat-label">Sesiones hoy</span>
+                <span class="stat-value">23</span>
+                <span class="stat-change positive">↑ 12% vs ayer</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabs de administración -->
+          <div class="tab-bar" style="margin-bottom:20px;">
+            <button class="tab active" onclick="switchTab('admin-tab-usuarios', this)">👥 Usuarios</button>
+            <button class="tab" onclick="switchTab('admin-tab-roles', this)">🔐 Roles y Permisos</button>
+            <button class="tab" onclick="switchTab('admin-tab-config', this)">⚙️ Configuración</button>
+            <button class="tab" onclick="switchTab('admin-tab-log', this)">📋 Registro de Actividad</button>
+          </div>
+
+          <!-- TAB: Usuarios -->
+          <div id="admin-tab-usuarios" class="tab-content">
             <div class="card">
-              <div class="card-header"><h3>Usuarios del sistema</h3><span class="badge badge-blue">48 activos</span></div>
+              <div class="card-header">
+                <h3>Usuarios del sistema</h3>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <input type="text" class="input-search" placeholder="🔍 Buscar usuario..." style="width:200px;" />
+                  <select class="input-search" style="width:140px;">
+                    <option>Todos los roles</option>
+                    <option>Docente</option>
+                    <option>URH/Legajos</option>
+                    <option>Comisión</option>
+                    <option>Decanato</option>
+                    <option>Admin</option>
+                  </select>
+                  <span class="badge badge-blue">48 activos</span>
+                </div>
+              </div>
               <table class="data-table">
                 <thead>
-                  <tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Unidad</th><th>Vigente hasta</th><th>Estado</th><th></th></tr>
+                  <tr><th>Usuario</th><th>Nombre completo</th><th>Rol</th><th>Unidad</th><th>Último acceso</th><th>Vigente hasta</th><th>Estado</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
+                  <tr>
+                    <td><code>admin</code></td>
+                    <td>Administrador TI</td>
+                    <td><span class="badge badge-red">Admin</span></td>
+                    <td>Oficina TI — UNP</td>
+                    <td>Hoy 14:31</td>
+                    <td>31/12/2030</td>
+                    <td><span class="badge badge-green">Activo</span></td>
+                    <td><button class="btn-sm btn-outline" onclick="showToast('No puedes editar al administrador principal','warning')">✏</button></td>
+                  </tr>
                   <tr>
                     <td><code>mgarcia</code></td>
                     <td>María García López</td>
                     <td><span class="badge badge-blue">URH/Legajos</span></td>
                     <td>Oficina URH Central</td>
+                    <td>Hoy 09:15</td>
                     <td>31/12/2026</td>
                     <td><span class="badge badge-green">Activo</span></td>
-                    <td><button class="btn-sm btn-outline" onclick="showToast('Editando usuario mgarcia','info')">✏</button></td>
+                    <td style="display:flex;gap:4px;">
+                      <button class="btn-sm btn-outline" onclick="showToast('Editando usuario mgarcia','info')">✏</button>
+                      <button class="btn-sm btn-outline" style="color:var(--clr-accent)" onclick="showToast('Acceso suspendido temporalmente','warning')">🔒</button>
+                    </td>
                   </tr>
                   <tr>
                     <td><code>jperez</code></td>
                     <td>Juan Pérez Silva</td>
                     <td><span class="badge badge-purple">Comisión</span></td>
                     <td>Fac. Ingeniería</td>
+                    <td>Ayer 16:40</td>
                     <td>30/11/2025</td>
-                    <td><span class="badge badge-green">Activo</span></td>
-                    <td><button class="btn-sm btn-outline">✏</button></td>
+                    <td><span class="badge badge-yellow">Por vencer</span></td>
+                    <td style="display:flex;gap:4px;">
+                      <button class="btn-sm btn-outline" onclick="showToast('Editando usuario jperez','info')">✏</button>
+                      <button class="btn-sm btn-primary" onclick="showToast('Vigencia renovada hasta 30/11/2026','success')">↻ Renovar</button>
+                    </td>
                   </tr>
                   <tr>
                     <td><code>palva</code></td>
                     <td>Pedro Alva Ruiz</td>
                     <td><span class="badge badge-yellow">Decanato</span></td>
                     <td>Fac. Ingeniería Civil</td>
+                    <td>Hoy 11:02</td>
                     <td>31/07/2026</td>
                     <td><span class="badge badge-green">Activo</span></td>
-                    <td><button class="btn-sm btn-outline">✏</button></td>
+                    <td style="display:flex;gap:4px;">
+                      <button class="btn-sm btn-outline" onclick="showToast('Editando usuario palva','info')">✏</button>
+                      <button class="btn-sm btn-outline" style="color:var(--clr-accent)" onclick="showToast('Acceso suspendido','warning')">🔒</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>crodriguez</code></td>
+                    <td>Carlos Rodríguez Vega</td>
+                    <td><span class="badge badge-green">Docente</span></td>
+                    <td>Depto. Matemáticas</td>
+                    <td>Hace 3 días</td>
+                    <td>31/12/2028</td>
+                    <td><span class="badge badge-green">Activo</span></td>
+                    <td style="display:flex;gap:4px;">
+                      <button class="btn-sm btn-outline" onclick="showToast('Editando usuario crodriguez','info')">✏</button>
+                      <button class="btn-sm btn-outline" style="color:var(--clr-accent)" onclick="showToast('Acceso suspendido','warning')">🔒</button>
+                    </td>
                   </tr>
                   <tr>
                     <td><code>aflores</code></td>
                     <td>Ana Flores Mendoza</td>
                     <td><span class="badge badge-green">Docente</span></td>
                     <td>Depto. Estructuras</td>
+                    <td>Hoy 08:50</td>
                     <td>31/12/2030</td>
                     <td><span class="badge badge-green">Activo</span></td>
-                    <td><button class="btn-sm btn-outline">✏</button></td>
+                    <td style="display:flex;gap:4px;">
+                      <button class="btn-sm btn-outline" onclick="showToast('Editando usuario aflores','info')">✏</button>
+                      <button class="btn-sm btn-outline" style="color:var(--clr-accent)" onclick="showToast('Acceso suspendido','warning')">🔒</button>
+                    </td>
                   </tr>
+                  <tr>
+                    <td><code>lmendez</code></td>
+                    <td>Luis Méndez Calle</td>
+                    <td><span class="badge badge-green">Docente</span></td>
+                    <td>Depto. Física</td>
+                    <td>Hace 1 semana</td>
+                    <td>15/06/2025</td>
+                    <td><span class="badge badge-red">Vencido</span></td>
+                    <td style="display:flex;gap:4px;">
+                      <button class="btn-sm btn-outline" onclick="showToast('Editando usuario lmendez','info')">✏</button>
+                      <button class="btn-sm btn-primary" onclick="showToast('Vigencia renovada hasta 15/06/2026','success')">↻ Renovar</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 0;color:var(--clr-text-muted);font-size:13px;">
+                <span>Mostrando 7 de 48 usuarios</span>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn-sm btn-outline">← Ant.</button>
+                  <button class="btn-sm btn-primary">1</button>
+                  <button class="btn-sm btn-outline">2</button>
+                  <button class="btn-sm btn-outline">3</button>
+                  <button class="btn-sm btn-outline">Sig. →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Roles y Permisos -->
+          <div id="admin-tab-roles" class="tab-content hidden">
+            <div class="card">
+              <div class="card-header"><h3>Matriz de Roles y Permisos</h3><span class="badge badge-blue">5 roles</span></div>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Módulo / Función</th>
+                    <th style="text-align:center">🎓 Docente</th>
+                    <th style="text-align:center">📂 URH</th>
+                    <th style="text-align:center">⚖️ Comisión</th>
+                    <th style="text-align:center">🏛️ Decanato</th>
+                    <th style="text-align:center">⚙️ Admin</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td><strong>Dashboard</strong></td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+                  <tr><td>Mi Legajo — Ver</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+                  <tr><td>Mi Legajo — Editar</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td></tr>
+                  <tr><td>Verificación de Méritos</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+                  <tr><td>Convocatorias — Ver</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+                  <tr><td>Convocatorias — Crear</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+                  <tr><td>Evaluación Docente</td><td style="text-align:center">❌</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+                  <tr><td>Orden de Mérito</td><td style="text-align:center">👁 Solo ver</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+                  <tr><td>Trámite Propuesta</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+                  <tr><td>Auditoría / Historial</td><td style="text-align:center">❌</td><td style="text-align:center">❌</td><td style="text-align:center">❌</td><td style="text-align:center">👁 Solo ver</td><td style="text-align:center">✅</td></tr>
+                  <tr><td><strong>Administración</strong></td><td style="text-align:center">❌</td><td style="text-align:center">❌</td><td style="text-align:center">❌</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
+
+          <!-- TAB: Configuración -->
+          <div id="admin-tab-config" class="tab-content hidden">
+            <div class="admin-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+              <div class="card">
+                <div class="card-header"><h3>⚙️ Configuración General</h3></div>
+                <div style="display:flex;flex-direction:column;gap:16px;padding:4px 0;">
+                  <div class="form-group">
+                    <label class="form-label">Nombre del sistema</label>
+                    <input class="input-search" style="width:100%" value="SIGLEPRO v2.0" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Institución</label>
+                    <input class="input-search" style="width:100%" value="Universidad Nacional de Piura" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Puntaje mínimo para promoción</label>
+                    <input class="input-search" style="width:100%" type="number" value="55" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Correo de soporte TI</label>
+                    <input class="input-search" style="width:100%" value="tic@unp.edu.pe" />
+                  </div>
+                  <button class="btn-primary" onclick="showToast('✅ Configuración guardada correctamente','success')">💾 Guardar cambios</button>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header"><h3>🔔 Notificaciones del sistema</h3></div>
+                <div style="display:flex;flex-direction:column;gap:14px;padding:4px 0;">
+                  <label style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                    <span style="font-size:13px;">Alertas de vencimiento de cuentas</span>
+                    <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--clr-primary);" />
+                  </label>
+                  <label style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                    <span style="font-size:13px;">Notificación de nuevas convocatorias</span>
+                    <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--clr-primary);" />
+                  </label>
+                  <label style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                    <span style="font-size:13px;">Resumen diario por email</span>
+                    <input type="checkbox" style="width:18px;height:18px;accent-color:var(--clr-primary);" />
+                  </label>
+                  <label style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                    <span style="font-size:13px;">Notificación de inicio de sesión inusual</span>
+                    <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--clr-primary);" />
+                  </label>
+                  <label style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                    <span style="font-size:13px;">Avisos de mantenimiento programado</span>
+                    <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--clr-primary);" />
+                  </label>
+                  <hr style="border:none;border-top:1px solid var(--clr-border);" />
+                  <button class="btn-primary" onclick="showToast('✅ Preferencias de notificación guardadas','success')">💾 Guardar preferencias</button>
+                </div>
+              </div>
+
+              <div class="card" style="grid-column:span 2;">
+                <div class="card-header"><h3>🛡️ Seguridad del sistema</h3></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:4px 0;">
+                  <div>
+                    <label class="form-label">Intentos máximos de login</label>
+                    <input class="input-search" style="width:100%" type="number" value="5" />
+                  </div>
+                  <div>
+                    <label class="form-label">Tiempo de sesión (minutos)</label>
+                    <input class="input-search" style="width:100%" type="number" value="60" />
+                  </div>
+                  <div>
+                    <label class="form-label">Política de contraseñas</label>
+                    <select class="input-search" style="width:100%">
+                      <option>Fuerte (8+ chars, mayús, núm, símbolo)</option>
+                      <option>Media (6+ chars, núm)</option>
+                      <option>Básica (4+ chars)</option>
+                    </select>
+                  </div>
+                </div>
+                <div style="margin-top:16px;display:flex;gap:10px;">
+                  <button class="btn-primary" onclick="showToast('✅ Configuración de seguridad guardada','success')">💾 Guardar seguridad</button>
+                  <button class="btn-outline" onclick="showToast('🔑 Forzando cambio de contraseña a todos los usuarios...','info')">🔄 Forzar reset de contraseñas</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Registro de actividad -->
+          <div id="admin-tab-log" class="tab-content hidden">
+            <div class="card">
+              <div class="card-header">
+                <h3>📋 Registro de Actividad del Sistema</h3>
+                <div style="display:flex;gap:8px;">
+                  <input type="date" class="input-search" value="2025-10-15" />
+                  <button class="btn-sm btn-outline" onclick="showToast('Exportando log a CSV...','info')">⬇ Exportar</button>
+                </div>
+              </div>
+              <table class="data-table">
+                <thead>
+                  <tr><th>Fecha / Hora</th><th>Usuario</th><th>Acción</th><th>Módulo</th><th>IP</th><th>Estado</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>2025-10-15 14:31</td><td><code>admin</code></td><td>Inicio de sesión</td><td>Sistema</td><td>192.168.1.10</td><td><span class="badge badge-green">OK</span></td></tr>
+                  <tr><td>2025-10-15 14:00</td><td><code>mgarcia</code></td><td>Verificó mérito docente: Mg. Torres</td><td>Méritos</td><td>192.168.1.22</td><td><span class="badge badge-green">OK</span></td></tr>
+                  <tr><td>2025-10-15 13:45</td><td><code>jperez</code></td><td>Cerró evaluación convocatoria #2025-01</td><td>Evaluación</td><td>192.168.1.45</td><td><span class="badge badge-green">OK</span></td></tr>
+                  <tr><td>2025-10-15 11:20</td><td><code>palva</code></td><td>Aprobó propuesta de promoción</td><td>Propuesta</td><td>192.168.1.33</td><td><span class="badge badge-green">OK</span></td></tr>
+                  <tr><td>2025-10-15 09:05</td><td><code>intento_fallido</code></td><td>Login fallido (3er intento)</td><td>Sistema</td><td>190.12.44.99</td><td><span class="badge badge-red">Error</span></td></tr>
+                  <tr><td>2025-10-14 17:30</td><td><code>crodriguez</code></td><td>Subió documento: Diploma de Maestría</td><td>Legajo</td><td>192.168.1.77</td><td><span class="badge badge-green">OK</span></td></tr>
+                  <tr><td>2025-10-14 16:00</td><td><code>admin</code></td><td>Creó usuario: lmendez</td><td>Administración</td><td>192.168.1.10</td><td><span class="badge badge-green">OK</span></td></tr>
+                  <tr><td>2025-10-14 14:22</td><td><code>mgarcia</code></td><td>Rechazó mérito sin firma original</td><td>Méritos</td><td>192.168.1.22</td><td><span class="badge badge-yellow">Observado</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </section>
+
 
       </main>
     </div>

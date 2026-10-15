@@ -746,18 +746,29 @@
         btn.classList.remove('loading');
         btn.disabled = false;
 
-        const roleData = roles[currentRole];
-        const validUser = userInput === roleData.user;
-        const validPass = passInput === roleData.pass;
+        // Buscar en TODOS los roles (no solo el seleccionado)
+        let matchedRole = null;
+        for (const [roleKey, roleData] of Object.entries(roles)) {
+          if (userInput === roleData.user && passInput === roleData.pass) {
+            matchedRole = roleKey;
+            break;
+          }
+        }
 
-        if (validUser && validPass) {
-          sessionStorage.setItem('siglepro_role', currentRole);
-          sessionStorage.setItem('siglepro_user', roleData.name);
+        if (matchedRole) {
+          // Auto-cambiar el tab al rol correcto si es distinto
+          if (matchedRole !== currentRole) {
+            const tab = document.getElementById('tab-' + matchedRole);
+            if (tab) selectRole(matchedRole, tab);
+          }
 
-          showToast('✅ Bienvenido · Redirigiendo...', 'success');
+          sessionStorage.setItem('siglepro_role', matchedRole);
+          sessionStorage.setItem('siglepro_user', roles[matchedRole].name);
+
+          showToast('✅ Bienvenido, ' + roles[matchedRole].name + ' · Redirigiendo...', 'success');
 
           setTimeout(() => {
-            window.location.href = 'index.html?role=' + currentRole;
+            window.location.href = 'index.html?role=' + matchedRole;
           }, 1200);
         } else {
           showError('Usuario o contraseña incorrectos. Intenta de nuevo.');
